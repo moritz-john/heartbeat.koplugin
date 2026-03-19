@@ -3,5 +3,5 @@ return {
     fullname = "Heartbeat",
     description =
     "This plugin allows KOReader to send its current state (+ book info & battery level) to a Home Assistant binary sensor.",
-    version = "v26.02.26",
+    version = "v26.03.19",
 }

@@ -1,4 +1,4 @@
-# heartbeat.koplugin
+# heartbeat.koplugin (experimental)
 
 <p align="center">
 <img src="assets/heartbeat_sensor.png" />
