@@ -80,9 +80,13 @@ end
 --- Send the current KOReader state to Home Assistant
 function Heartbeat:sendHeartbeat(state, skip_book_info)
     if not NetworkMgr:isConnected() then
-        logger.info("[Heartbeat]: no network connection, skipping heartbeat")
+        if not self._offline_logged then
+            logger.info("[Heartbeat]: no network connection, skipping heartbeats")
+            self._offline_logged = true
+        end
         return
     end
+    self._offline_logged = false
 
     local url = self:buildUrl()
 
