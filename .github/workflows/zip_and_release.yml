@@ -20,7 +20,7 @@ jobs:
 
       - name: Prepare folder structure
         run: |
-          mkdir -p homeassistant.koplugin
+          mkdir -p heartbeat.koplugin
           cp main.lua heartbeat_api.lua heartbeat_config.lua _meta.lua heartbeat.koplugin/
 
       - name: Create ZIP archive
@@ -30,6 +30,6 @@ jobs:
         uses: ncipollo/release-action@v1.20.0
         with:
           artifacts: "heartbeat.koplugin.zip"
-          name: ${{ github.event.inputs.version }} "heartbeat.koplugin.zip" 
+          name: ${{ github.event.inputs.version }} heartbeat.koplugin.zip
           tag: ${{ github.event.inputs.version }}
           token: ${{ secrets.GITHUB_TOKEN }}
