@@ -1,0 +1,35 @@
+name: Create ZIP & Release
+
+on: 
+  workflow_dispatch:
+    inputs:
+      version: 
+        description: "Version"
+        default: "v26.01.01"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  zip-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.0
+
+      - name: Prepare folder structure
+        run: |
+          mkdir -p homeassistant.koplugin
+          cp main.lua heartbeat_api.lua heartbeat_config.lua _meta.lua heartbeat.koplugin/
+
+      - name: Create ZIP archive
+        run: zip -r heartbeat.koplugin.zip heartbeat.koplugin
+
+      - name: Upload Release
+        uses: ncipollo/release-action@v1.20.0
+        with:
+          artifacts: "heartbeat.koplugin.zip"
+          name: ${{ github.event.inputs.version }} "heartbeat.koplugin.zip" 
+          tag: ${{ github.event.inputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
