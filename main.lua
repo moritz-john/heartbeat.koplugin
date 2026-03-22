@@ -90,11 +90,23 @@ function Heartbeat:sendHeartbeat(state, skip_book_info)
 
     local url = self:buildUrl()
 
-    -- Get book title and author
-    local book_title, book_author = nil, nil
-    if self.ui and self.ui.doc_props and state == "on" and not skip_book_info then
-        book_title = self.ui.doc_props.display_title or "Unknown Book"
-        book_author = (self.ui.doc_props.authors and self.ui.doc_props.authors:gsub("\n", ", ")) or "Unknown Author"
+    -- Get book information
+    local book_title, book_author = rapidjson.null, rapidjson.null
+    local current_page, total_pages, pages_remaining, reading_progress = rapidjson.null, rapidjson.null, rapidjson.null,
+        rapidjson.null
+
+    if state == "on" and not skip_book_info then
+        if self.ui.doc_props then
+            book_title  = self.ui.doc_props.display_title or "Unknown Book"
+            book_author = self.ui.doc_props.authors and self.ui.doc_props.authors:gsub("\n", ", ") or "Unknown Author"
+        end
+        if self.ui.document then
+            -- getCurrentPage(): fixed-page (PDF) or reflowable (EPUB)
+            current_page     = self.ui:getCurrentPage()
+            total_pages      = self.ui.document:getPageCount()
+            pages_remaining  = total_pages - current_page
+            reading_progress = math.floor(current_page / total_pages * 100 + 0.5)
+        end
     end
 
     local service_data = {
@@ -102,9 +114,13 @@ function Heartbeat:sendHeartbeat(state, skip_book_info)
         attributes = {
             friendly_name = "KOReader Status",
             icon = state == "on" and "mdi:book-variant" or "mdi:book-off",
-            device_model = Device.model,
-            book_title = book_title or rapidjson.null,
-            book_author = book_author or rapidjson.null,
+            device_model = Device.model or "Unknown Device",
+            book_title = book_title,
+            book_author = book_author,
+            -- current_page = current_page,
+            -- total_pages = total_pages,
+            -- pages_remaining = pages_remaining,
+            reading_progress = reading_progress,
             battery_level = Device:hasBattery() and powerd:getCapacity() or rapidjson.null,
             is_charging = Device:hasBattery() and powerd:isCharging() or false,
             last_seen = os.date("!%Y-%m-%dT%H:%M:%SZ")
