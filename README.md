@@ -49,7 +49,7 @@ After editing `heartbeat_config.lua`, copy the files to your KOReader device:
 
 ### Step 4: Restart KOReader
 
-The plugin appears under **Tools → Page 2 → Heartbeat Configuration**
+The plugin appears under **Tools → Heartbeat Configuration**
 
 ## Settings & Caveats
 
@@ -60,11 +60,29 @@ Long press a menu entry in **Heartbeat Configuration** to get an explanation of 
 > [!NOTE] 
 > `heartbeat.koplugin` assumes that KOReader has Wi-Fi connectivity. State updates are sent on start/resume/suspend & document open/close and will fail silently if Home Assistant or Wi-Fi is unavailable. The resume state is sent with an 8-second delay (default) but is adjustable. Not every state update action works on every device.
 
-## Screenshots
+## Kobo "off" State Workaround
+
+If your device does not send the `"off"` state (for example some Kobo devices), you can create a Home Assistant template binary sensor instead.
+
+Set the timeout to your **Heartbeat Update Interval** plus a small buffer.  
+Example for an update interval of `300` seconds:
 
 <p align="center">
-<img src="assets/tools_menu.png" style="width:70%; height:auto;" />
+<img src="assets/template_binary_sensor.png" style="width:70%; height:auto;" />
 </p>
+
+```yaml
+{% set last_seen = state_attr('binary_sensor.koreader_status', 'last_seen') %}
+{% if last_seen %}
+  {{ (now() - as_datetime(last_seen)).total_seconds() < 305 }}
+{% else %}
+  false
+{% endif %}
+```
+
+This template sensor stays `"on"` while heartbeats are still recent, and turns `"off"` automatically when they stop.
+
+## Screenshots
 
 <p align="center">
 <img src="assets/heartbeat_settings.png" style="width:70%; height:auto;" />
