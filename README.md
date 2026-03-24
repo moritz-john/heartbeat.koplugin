@@ -11,20 +11,19 @@
 </p>
 
 ## Features
+This plugin updates a Home Assistant binary sensor with KOReader’s status, so you can build automations around reading activity, device wake/sleep events and book metadata.
 
-The plugin can send KOReader's current state ("a heartbeat") to a Home Assistant binary sensor. This sensor can be used to trigger automations based on your reading activity.
-
-The sensor includes the following attributes: `device_model`, `book_title`, `book_author`, `battery_level`, `is_charging` and `last_seen`.
+Reported attributes include `device_model`, `book_title`, `book_author`, `battery_level`, `is_charging`, and `last_seen`.
 
 ## Installation
 
 ### Step 1: Download the Plugin
-[Download the latest release](https://github.com/moritz-john/heartbeat.koplugin/releases) and unpack `heartbeat.koplugin.zip`:  
+[Download the latest release](https://github.com/moritz-john/heartbeat.koplugin/releases) and unpack `heartbeat.koplugin.zip`. 
 
 ### Step 2: Edit `heartbeat_config.lua`
 
-Add your Home Assistant connection details.  
-Change `host`, `port`, `https` and `token` according to your personal setup:
+Edit `heartbeat_config.lua` with the connection details for your Home Assistant instance.  
+Update `host`, `port`, `https`, and `token` to match your setup:
 
 ```lua
 return {
@@ -41,24 +40,23 @@ return {
 > [**Home Assistant**](https://my.home-assistant.io/redirect/profile): *Profile → Security (scroll down) → Long-lived access tokens → Create token*  
 > *Copy the token now – you won’t be able to view it again.*
 
-### Step 3: Copy Files to Your Device
+### Step 3: Copy Files to Your Device 
 
-After editing `heartbeat_config.lua`, copy the files to your KOReader device:
-
-**Copy the entire `heartbeat.koplugin` folder into `koreader/plugins/`**  
+After editing `heartbeat_config.lua`, copy the entire `heartbeat.koplugin` folder to your KOReader device:  
+`koreader/plugins/`
 
 ### Step 4: Restart KOReader
 
-The plugin appears under **Tools → Heartbeat Configuration**
+The plugin appears under **Tools → Page X → Heartbeat Configuration**
 
-## Settings & Caveats
+## Settings & Notes
 
-Long press a menu entry in **Heartbeat Configuration** to get an explanation of what each setting does.
+Long-press any menu entry in **Heartbeat Configuration** to see a short explanation of that setting.
 
 <br>
 
-> [!NOTE] 
-> `heartbeat.koplugin` assumes that KOReader has Wi-Fi connectivity. State updates are sent on start/resume/suspend & document open/close and will fail silently if Home Assistant or Wi-Fi is unavailable. The resume state is sent with an 8-second delay (default) but is adjustable. Not every state update action works on every device.
+> [!NOTE]
+> `heartbeat.koplugin` sends updates on wake, sleep, document open & close, with optional periodic updates while awake. If KOReader has no Wi-Fi connection, updates are skipped. If Home Assistant is unavailable, heartbeat requests fail silently. Wake updates are sent with an 8-second delay (default) but is adjustable. Some events may not work reliably on all devices.
 
 ## Kobo "off" State Workaround
 
@@ -83,6 +81,10 @@ Example for an update interval of `300` seconds:
 This template sensor stays `"on"` while heartbeats are still recent, and turns `"off"` automatically when they stop.
 
 ## Screenshots
+
+<p align="center">
+<img src="assets/tools_menu.png" style="width:70%; height:auto;" />
+</p>
 
 <p align="center">
 <img src="assets/heartbeat_settings.png" style="width:70%; height:auto;" />
