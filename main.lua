@@ -35,18 +35,14 @@ Heartbeat.default_settings = {
 --- Load settings and merge with defaults
 function Heartbeat:loadSettings()
     -- Load saved settings, or start with empty table if none exist
-    self.settings = G_reader_settings:readSetting("heartbeat") or {}
-
-    -- Merge in any missing default values (important for plugin updates that add new settings)
-    for key, value in pairs(self.default_settings) do
-        if self.settings[key] == nil then
-            self.settings[key] = value
-        end
+    local saved_settings = G_reader_settings:readSetting("heartbeat") or {}
+    -- Build settings from defaults, overriding with any saved values
+    self.settings = {}
+    for setting_name, default_value in pairs(self.default_settings) do
+        -- If the saved version exists, use it; otherwise, use the default
+        self.settings[setting_name] = (saved_settings[setting_name] ~= nil) and saved_settings[setting_name] or
+            default_value
     end
-
-    -- Save the merged settings back to disk
-    G_reader_settings:saveSetting("heartbeat", self.settings)
-    G_reader_settings:flush()
 end
 
 --- Initialize the plugin
