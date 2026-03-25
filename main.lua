@@ -263,16 +263,20 @@ function Heartbeat:addToMainMenu(menu_items)
                             callback = function()
                                 local value = input_dialog:getInputText()
                                 if value and value ~= "" then
-                                    self.settings.heartbeat_name = value:gsub("%s+", "_")
+                                    -- Normalize to a valid HA entity ID: lowercase, spaces/hyphens to underscores, strip invalid characters
+                                    local sanitized = value:lower():gsub("[%s%-]+", "_"):gsub("[^%w_]", ""):gsub("^_+", ""):gsub("_+$", "")
+                                    if sanitized ~= "" then
+                                        self.settings.heartbeat_name = sanitized
 
-                                    self:saveSettings()
+                                        self:saveSettings()
 
-                                    -- Send updated heartbeat
-                                    if self.settings.heartbeat_enabled then
-                                        self:sendHeartbeat("on")
+                                        -- Send updated heartbeat
+                                        if self.settings.heartbeat_enabled then
+                                            self:sendHeartbeat("on")
+                                        end
+
+                                        touchmenu_instance:updateItems()
                                     end
-
-                                    touchmenu_instance:updateItems()
                                 end
                                 UIManager:close(input_dialog)
                             end,
