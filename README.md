@@ -15,6 +15,10 @@ This plugin updates a Home Assistant binary sensor with KOReader’s status, so 
 
 Reported attributes include `device_model`, `book_title`, `book_author`, `battery_level`, `is_charging`, and `last_seen`.
 
+<br>
+
+> **If you want to control Home Assistant devices from within KOReader, check out [homeassistant.koplugin](https://github.com/moritz-john/homeassistant.koplugin)**
+
 ## Installation
 
 ### Step 1: Download the Plugin
