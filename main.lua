@@ -77,6 +77,64 @@ function Heartbeat:buildUrl()
         protocol, ha_config.host, ha_config.port, self.settings.heartbeat_name)
 end
 
+function Heartbeat:buildSensorUrl(sensor_name)
+    local protocol = ha_config.https == true and "https" or "http"
+    return string.format("%s://%s:%d/api/states/sensor.%s",
+        protocol, ha_config.host, ha_config.port, sensor_name)
+end
+
+function Heartbeat:getSensorPrefix()
+    local heartbeat_name = self.settings.heartbeat_name or "koreader_status"
+    local prefix = heartbeat_name:gsub("_status$", "")
+    if prefix == "" then
+        return heartbeat_name
+    end
+    return prefix
+end
+
+function Heartbeat:sendSensorState(sensor_name, sensor_state, attributes)
+    -- Keep the last known values for reading metadata when KOReader goes offline.
+    if sensor_state == nil or sensor_state == rapidjson.null then
+        return
+    end
+
+    local has_error, response = API:performRequest(self:buildSensorUrl(sensor_name), ha_config.token, {
+        state = sensor_state,
+        attributes = attributes or {}
+    })
+
+    if has_error then
+        logger.info("[Heartbeat]: sending sensor update failed for '" .. sensor_name .. "' - Error:", response)
+    end
+end
+
+function Heartbeat:sendReadingSensors(reading_data)
+    local sensor_prefix = self:getSensorPrefix()
+    local reading_sensors = {
+        { key = "book_title",       friendly_name = "KOReader Book Title" },
+        { key = "book_author",      friendly_name = "KOReader Book Author" },
+        { key = "current_page",     friendly_name = "KOReader Current Page" },
+        { key = "total_pages",      friendly_name = "KOReader Total Pages" },
+        { key = "pages_remaining",  friendly_name = "KOReader Pages Remaining" },
+        { key = "reading_progress", friendly_name = "KOReader Reading Progress", unit = "%" },
+    }
+
+    for _, sensor in ipairs(reading_sensors) do
+        local attributes = {
+            friendly_name = sensor.friendly_name
+        }
+        if sensor.unit then
+            attributes.unit_of_measurement = sensor.unit
+        end
+
+        self:sendSensorState(
+            string.format("%s_%s", sensor_prefix, sensor.key),
+            reading_data[sensor.key],
+            attributes
+        )
+    end
+end
+
 --- Send the current KOReader state to Home Assistant
 function Heartbeat:sendHeartbeat(state, skip_book_info)
     if not NetworkMgr:isConnected() then
@@ -117,9 +175,9 @@ function Heartbeat:sendHeartbeat(state, skip_book_info)
             device_model = Device.model or "Unknown Device",
             book_title = book_title,
             book_author = book_author,
-            -- current_page = current_page,
-            -- total_pages = total_pages,
-            -- pages_remaining = pages_remaining,
+            current_page = current_page,
+            total_pages = total_pages,
+            pages_remaining = pages_remaining,
             reading_progress = reading_progress,
             battery_level = Device:hasBattery() and powerd:getCapacity() or rapidjson.null,
             is_charging = Device:hasBattery() and powerd:isCharging() or false,
@@ -130,6 +188,15 @@ function Heartbeat:sendHeartbeat(state, skip_book_info)
 
     if has_error then
         logger.info("[Heartbeat]: sending heartbeat failed - Error:", response)
+    else
+        self:sendReadingSensors({
+            book_title = book_title,
+            book_author = book_author,
+            current_page = current_page,
+            total_pages = total_pages,
+            pages_remaining = pages_remaining,
+            reading_progress = reading_progress
+        })
     end
 end
 
