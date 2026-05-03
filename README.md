@@ -14,7 +14,26 @@
 
 The plugin can send KOReader's current state ("a heartbeat") to a Home Assistant binary sensor. This sensor can be used to trigger automations based on your reading activity.
 
-The sensor includes the following attributes: `device_model`, `book_title`, `book_author`, `battery_level`, `is_charging` and `last_seen`.
+The binary sensor includes the following attributes: `device_model`, `book_title`, `book_author`, `current_page`, `total_pages`, `pages_remaining`, `reading_progress`, `battery_level`, `is_charging`, and `last_seen`.
+
+### Separate Home Assistant sensors (REST)
+
+After a successful heartbeat, the plugin also updates separate `sensor.*` entities via Home Assistant’s [States API](https://www.home-assistant.io/integrations/http/#post-apistatesentity_id) (`POST /api/states/sensor.<entity_id>`). This makes book and reading fields easier to use in automations and dashboards.
+
+**Naming:** the sensor entity id prefix is derived from the configured binary sensor name (`heartbeat_name` in settings). If the name ends with `_status`, that suffix is stripped; otherwise the full name is used as the prefix.
+
+Examples when `heartbeat_name` is `koreader_status` (default):
+
+| Entity id | Typical state | Notes |
+|-----------|---------------|--------|
+| `sensor.koreader_book_title` | book title | |
+| `sensor.koreader_book_author` | author | |
+| `sensor.koreader_current_page` | page number | |
+| `sensor.koreader_total_pages` | page count | |
+| `sensor.koreader_pages_remaining` | pages left | |
+| `sensor.koreader_reading_progress` | 0–100 | `unit_of_measurement`: `%` |
+
+**Last-known values:** updates are skipped when a value would be JSON `null`, so Home Assistant can keep the previous numeric or string state until KOReader sends a new value (for example after suspend or when no document is open).
 
 ## Installation
 
